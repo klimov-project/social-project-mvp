@@ -8,5 +8,6 @@ router.post('/users', userController.addUser);
 router.post('/users/:id/rating', userController.adjustRating);
 router.post('/users/:id/feedback', userController.leaveFeedback);
 router.post('/reset', userController.resetDatabase);
+router.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 module.exports = router;

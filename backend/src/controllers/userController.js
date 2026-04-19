@@ -1,7 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+console.log('Prisma client initialized');
+
 const getUsers = async (req, res) => {
+  console.log('getUsers called with query:', req.query);
   try {
     const { q } = req.query;
     const users = await prisma.user.findMany({
@@ -9,11 +12,13 @@ const getUsers = async (req, res) => {
         OR: [
           { name: { contains: q, mode: 'insensitive' } },
           { firstName: { contains: q, mode: 'insensitive' } }
-        ]
-      } : {}
+        ],
+      } : {},
     });
+    console.log(`Found ${users.length} users`);
     res.json(users);
   } catch (error) {
+    console.error('Error in getUsers:', error);
     res.status(500).json({ error: error.message });
   }
 };

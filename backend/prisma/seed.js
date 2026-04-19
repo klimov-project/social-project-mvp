@@ -1,6 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+console.log('Starting database seeding...');
+
 async function main() {
   await prisma.user.deleteMany({});
   

@@ -1,0 +1,28 @@
+# Backend Build Stage
+FROM node:22-slim AS backend-builder
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm install
+COPY backend/ .
+RUN npx prisma generate
+
+# Backend Runtime
+FROM node:22-slim
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y openssl curl && rm -rf /var/lib/apt/lists/*
+
+# Install backend dependencies
+COPY backend/package*.json ./backend/
+RUN cd backend && npm install --production
+
+# Copy built backend
+COPY --from=backend-builder /app/backend ./backend
+
+EXPOSE 4000
+
+# Script to run backend
+RUN echo '#!/bin/sh\ncd /app/backend\necho "Starting backend..."\necho "Syncing Prisma schema..."\nif npx prisma db push --skip-generate; then\n  echo "Prisma schema synced"\n  echo "Seeding database..."\n  npx prisma db seed || echo "Seeding skipped or failed (may be normal)"\n  echo "Starting Express server..."\n  node src/app.js\nelse\n  echo "Prisma schema sync failed"\n  exit 1\nfi' > /app/start.sh
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]

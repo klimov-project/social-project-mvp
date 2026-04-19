@@ -5,12 +5,15 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+console.log('Initializing Express app...');
+
 app.use(cors());
 app.use(express.json());
 
 app.use('/api', userRoutes);
 
 app.get('/health', (req, res) => {
+  console.log('Health check requested');
   res.json({ status: 'ok' });
 });
 
