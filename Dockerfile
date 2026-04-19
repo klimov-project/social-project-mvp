@@ -117,7 +117,7 @@ RUN printf '#!/bin/sh\n\
     # Запуск frontend\n\
     cd /app/frontend\n\
     echo "Starting frontend..."\n\
-    node .output/server/index.mjs 2>&1 &\n\
+    PORT=3000 node .output/server/index.mjs 2>&1 &\n\
     FRONTEND_PID=$!\n\
     wait_for_service 3000 "Frontend" || exit 1\n\
     \n\
