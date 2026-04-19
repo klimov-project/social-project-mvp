@@ -23,8 +23,8 @@ RUN npm run build
 # ============ STAGE 3: Runtime ============
 FROM node:22-slim
 
-# Устанавливаем curl для healthcheck и nginx
-RUN apt-get update && apt-get install -y curl nginx && rm -rf /var/lib/apt/lists/*
+# Устанавливаем curl для healthcheck, nginx и netcat для проверки портов
+RUN apt-get update && apt-get install -y curl nginx netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -63,46 +63,73 @@ RUN printf 'events {}\n\
     }\n\
     ' > /etc/nginx/nginx.conf
 
-# Создаём единый скрипт запуска (nginx + backend + frontend)
+# Создаём скрипт ожидания готовности сервисов 
 RUN printf '#!/bin/sh\n\
     \n\
-    # Функция для graceful shutdown\n\
+    wait_for_service() {\n\
+    local port=$1\n\
+    local name=$2\n\
+    local max_attempts=30\n\
+    local attempt=1\n\
+    \n\
+    echo "Waiting for $name on port $port..."\n\
+    \n\
+    while [ $attempt -le $max_attempts ]; do\n\
+    if nc -z localhost $port 2>/dev/null; then\n\
+    echo "✓ $name is ready (attempt $attempt)"\n\
+    return 0\n\
+    fi\n\
+    \n\
+    local wait_time=$((1 << attempt))\n\
+    [ $wait_time -gt 30 ] && wait_time=30\n\
+    \n\
+    echo "  Attempt $attempt/$max_attempts: $name not ready, waiting ${wait_time}s..."\n\
+    sleep $wait_time\n\
+    attempt=$((attempt + 1))\n\
+    done\n\
+    \n\
+    echo "✗ $name failed to start after $max_attempts attempts"\n\
+    return 1\n\
+    }\n\
+    \n\
     cleanup() {\n\
     echo "Shutting down services..."\n\
     kill $NGINX_PID $BACKEND_PID $FRONTEND_PID 2>/dev/null\n\
     exit 0\n\
     }\n\
     \n\
-    # Перехватываем сигналы\n\
     trap cleanup INT TERM\n\
     \n\
-    # Запускаем nginx\n\
-    echo "Starting nginx..."\n\
-    nginx -g "daemon off;" &\n\
-    NGINX_PID=$!\n\
-    \n\
-    # Запускаем backend в фоне\n\
+    # Запуск backend\n\
     cd /app/backend\n\
     echo "Starting backend..."\n\
     \n\
-    # Ждём PostgreSQL (если DATABASE_URL установлен)\n\
     if [ -n "$DATABASE_URL" ]; then\n\
-    echo "Waiting for database..."\n\
+    echo "Running Prisma setup..."\n\
     npx prisma db push --skip-generate\n\
-    npx prisma db seed 2>/dev/null || echo "Seeding skipped or failed"\n\
+    npx prisma db seed 2>/dev/null || echo "Seeding skipped"\n\
     fi\n\
     \n\
-    echo "Starting Express server..."\n\
-    node src/app.js &\n\
+    node src/app.js 2>&1 &\n\
     BACKEND_PID=$!\n\
+    wait_for_service 4000 "Backend" || exit 1\n\
     \n\
-    # Запускаем frontend в фоне\n\
+    # Запуск frontend\n\
     cd /app/frontend\n\
     echo "Starting frontend..."\n\
-    node .output/server/index.mjs &\n\
+    node .output/server/index.mjs 2>&1 &\n\
     FRONTEND_PID=$!\n\
+    wait_for_service 3000 "Frontend" || exit 1\n\
     \n\
-    # Ждём завершения любого из процессов\n\
+    # Запуск nginx\n\
+    echo "Starting nginx..."\n\
+    nginx -g "daemon off;" 2>&1 &\n\
+    NGINX_PID=$!\n\
+    \n\
+    echo "========================================="\n\
+    echo "All services ready! Nginx on port 80"\n\
+    echo "========================================="\n\
+    \n\
     wait $NGINX_PID $BACKEND_PID $FRONTEND_PID\n\
     ' > /app/start.sh
 
@@ -110,7 +137,7 @@ RUN chmod +x /app/start.sh
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
     CMD curl -f http://localhost:80/api/health || exit 1
 
 CMD ["/app/start.sh"]
