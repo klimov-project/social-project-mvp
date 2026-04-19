@@ -1,0 +1,27 @@
+{
+  "name": "social-project-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test:unit": "vitest run --coverage"
+  },
+  "dependencies": {
+    "nuxt": "^4.0.0-rc.2",
+    "vue": "^3.4.0",
+    "pinia": "^2.1.7",
+    "@pinia/nuxt": "^0.5.1",
+    "@nuxtjs/tailwindcss": "^6.10.0",
+    "lucide-vue-next": "^0.300.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "jsdom": "^23.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
+  }
+}
