@@ -3,7 +3,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.BACKEND_PORT || 4000;
 
 console.log('Initializing Express app...');
 
