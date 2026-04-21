@@ -1,0 +1,60 @@
+@host_api = http://localhost:4000/api
+@username = user_1
+@password = password
+@contentType = application/json
+@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTc2ODY4MDQ5NDQ4NiwidXNlcm5hbWUiOiJ1c2VyXzEiLCJpYXQiOjE3NzY3OTk5OTUsImV4cCI6MTc3NjgwMzU5NX0.3fPo9P7AfW47vnCX5itu4yM-Rb_Y0n-IGBH0GAgB-p8
+
+
+### Проверка работы сервера
+GET {{host_api}}/health
+
+
+### Регистрация нового пользователя
+# @name register
+POST {{host_api}}/auth/sign-up
+Content-Type: {{contentType}}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Вход в систему
+# @name login
+POST {{host_api}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Получение профиля (требуется токен)
+# Предварительно выполните запрос login и скопируйте токен
+GET {{host_api}}/auth/me
+Authorization: {{temporaryJWT}}
+Content-Type: {{contentType}}
+
+
+### Выход пользователя
+POST {{host_api}}/auth/logout
+Authorization: {{temporaryJWT}}
+Content-Type: {{contentType}}
+
+
+### Вход с неверными данными
+POST {{host_api}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "wrongname",
+  "password": "wrongpassword"
+}
+
+### Регистрация с неполными данными
+POST {{host_api}}/auth/sign-up
+Content-Type: {{contentType}}
+
+{
+  "username": "{{username}}"
+}

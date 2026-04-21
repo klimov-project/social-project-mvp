@@ -2,6 +2,7 @@
   "name": "social-project-backend",
   "version": "1.0.0",
   "main": "src/app.js",
+  "type": "module",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
@@ -13,7 +14,9 @@
     "@prisma/client": "^5.0.0",
     "pg": "^8.11.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "bcryptjs": "^3.0.3"
   },
   "devDependencies": {
     "prisma": "^5.0.0",

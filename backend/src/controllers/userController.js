@@ -1,4 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 console.log('Prisma client initialized');
@@ -61,16 +62,16 @@ const adjustRating = async (req, res) => {
       where: { id },
       data: { rating: { increment: delta } }
     });
-    
+
     // Recalculate referral chain logic could go here
     if (user.referral) {
-        const referrer = await prisma.user.findFirst({ where: { id: user.referral } });
-        if (referrer) {
-            await prisma.user.update({
-                where: { id: referrer.id },
-                data: { rating: { increment: delta * 0.1 } } // Example cascading effect
-            });
-        }
+      const referrer = await prisma.user.findFirst({ where: { id: user.referral } });
+      if (referrer) {
+        await prisma.user.update({
+          where: { id: referrer.id },
+          data: { rating: { increment: delta * 0.1 } } // Example cascading effect
+        });
+      }
     }
 
     res.json({ success: true, newRating: user.rating });
@@ -111,7 +112,7 @@ const resetDatabase = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getUsers,
   getUserById,
   addUser,
