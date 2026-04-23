@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -101,26 +102,40 @@ const leaveFeedback = async (req, res) => {
 
 async function tableExists(tableName) {
   try {
-    await prisma.$queryRaw`SELECT 1 FROM ${Prisma.raw(tableName)} LIMIT 1`;
-    return true;
+    // Проверяем существование таблицы через системную таблицу PostgreSQL
+    const result = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = '${tableName.toLowerCase()}'
+      );
+    `);
+    return result[0].exists;
   } catch (e) {
+    console.log(`Error checking table ${tableName}:`, e);
     return false;
   }
 }
 
 const resetDatabase = async (req, res) => {
   try {
+    // Проверяем существование таблиц
     const userTableExists = await tableExists('User');
     const accountTableExists = await tableExists('Account');
 
-    if (userTableExists) {
-      await prisma.user.deleteMany({});
-      console.log('Cleared users table');
+    console.log('User table exists:', userTableExists);
+    console.log('Account table exists:', accountTableExists);
+
+    // Очищаем таблицы в правильном порядке (с учетом внешних ключей)
+    if (accountTableExists) {
+      console.log('Clearing accounts table...');
+      await prisma.account.deleteMany({});
+      console.log('✓ Cleared accounts table');
     }
 
-    if (accountTableExists) {
-      await prisma.account.deleteMany({});
-      console.log('Cleared accounts table');
+    if (userTableExists) {
+      console.log('Clearing users table...');
+      await prisma.user.deleteMany({});
+      console.log('✓ Cleared users table');
     }
 
     // Seed initial data
