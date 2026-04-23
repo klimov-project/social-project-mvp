@@ -1,4 +1,3 @@
-dockerfile
 # ============ STAGE 1: Build Backend ============
 FROM node:22-slim AS backend-builder
 
@@ -44,25 +43,25 @@ events {
 }
 
 http {
-    server {
-        listen 80;
-        
-        location /api/ {
-            proxy_pass http://localhost:4000/api/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-        
-        location / {
-            proxy_pass http://localhost:3000/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
+server {
+listen 80;
+
+location /api/ {
+proxy_pass http://localhost:4000/api/;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location / {
+proxy_pass http://localhost:3000/;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+}
+}
 }
 EOF
 
@@ -78,134 +77,134 @@ BLUE="\033[0;34m"
 NC="\033[0m"
 
 print_status() {
-    echo "${BLUE}[$(date +"%H:%M:%S")]${NC} $1"
+echo "${BLUE}[$(date +"%H:%M:%S")]${NC} $1"
 }
 
 print_success() {
-    echo "${GREEN}✓${NC} $1"
+echo "${GREEN}✓${NC} $1"
 }
 
 print_error() {
-    echo "${RED}✗${NC} $1"
+echo "${RED}✗${NC} $1"
 }
 
 # Функция ожидания PostgreSQL
 wait_for_postgres() {
-    local max_attempts=30
-    local attempt=1
-    
-    print_status "Waiting for PostgreSQL to be ready..."
-    
-    # Извлекаем host и port из DATABASE_URL
-    DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\1/p')
-    DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\2/p')
-    
-    if [ -z "$DB_HOST" ]; then
-        DB_HOST="localhost"
-        DB_PORT="5432"
-    fi
-    
-    print_status "Connecting to PostgreSQL at $DB_HOST:$DB_PORT"
-    
-    while [ $attempt -le $max_attempts ]; do
-        if PGPASSWORD=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p') pg_isready -h $DB_HOST -p $DB_PORT -U $(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p') 2>/dev/null; then
-            print_success "PostgreSQL is ready (attempt $attempt)"
-            return 0
-        fi
-        
-        echo "  Attempt $attempt/$max_attempts: PostgreSQL not ready, waiting 2s..."
-        sleep 2
-        attempt=$((attempt + 1))
-    done
-    
-    print_error "PostgreSQL failed to become ready after $max_attempts attempts"
-    return 1
+local max_attempts=30
+local attempt=1
+
+print_status "Waiting for PostgreSQL to be ready..."
+
+# Извлекаем host и port из DATABASE_URL
+DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\1/p')
+DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\2/p')
+
+if [ -z "$DB_HOST" ]; then
+DB_HOST="localhost"
+DB_PORT="5432"
+fi
+
+print_status "Connecting to PostgreSQL at $DB_HOST:$DB_PORT"
+
+while [ $attempt -le $max_attempts ]; do
+if PGPASSWORD=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p') pg_isready -h $DB_HOST -p $DB_PORT -U $(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p') 2>/dev/null; then
+print_success "PostgreSQL is ready (attempt $attempt)"
+return 0
+fi
+
+echo "  Attempt $attempt/$max_attempts: PostgreSQL not ready, waiting 2s..."
+sleep 2
+attempt=$((attempt + 1))
+done
+
+print_error "PostgreSQL failed to become ready after $max_attempts attempts"
+return 1
 }
 
 wait_for_service() {
-    local port=$1
-    local name=$2
-    local max_attempts=30
-    local attempt=1
-    
-    print_status "Waiting for $name on port $port..."
-    
-    while [ $attempt -le $max_attempts ]; do
-        if nc -z localhost $port 2>/dev/null; then
-            print_success "$name is ready (attempt $attempt)"
-            return 0
-        fi
-        
-        local wait_time=$((1 << attempt))
-        [ $wait_time -gt 30 ] && wait_time=30
-        
-        echo "  Attempt $attempt/$max_attempts: $name not ready, waiting ${wait_time}s..."
-        sleep $wait_time
-        attempt=$((attempt + 1))
-    done
-    
-    print_error "$name failed to start after $max_attempts attempts"
-    return 1
+local port=$1
+local name=$2
+local max_attempts=30
+local attempt=1
+
+print_status "Waiting for $name on port $port..."
+
+while [ $attempt -le $max_attempts ]; do
+if nc -z localhost $port 2>/dev/null; then
+print_success "$name is ready (attempt $attempt)"
+return 0
+fi
+
+local wait_time=$((1 << attempt))
+[ $wait_time -gt 30 ] && wait_time=30
+
+echo "  Attempt $attempt/$max_attempts: $name not ready, waiting ${wait_time}s..."
+sleep $wait_time
+attempt=$((attempt + 1))
+done
+
+print_error "$name failed to start after $max_attempts attempts"
+return 1
 }
 
 setup_database() {
-    print_status "Setting up database..."
-    
-    if [ -z "$DATABASE_URL" ]; then
-        print_error "DATABASE_URL is not set"
-        return 1
-    fi
-    
-    # Ждём готовности PostgreSQL
-    if ! wait_for_postgres; then
-        return 1
-    fi
-    
-    cd /app/backend
-    
-    print_status "Applying database schema..."
-    npx prisma db push --skip-generate
-    
-    if [ $? -ne 0 ]; then
-        print_error "Failed to apply database schema"
-        return 1
-    fi
-    print_success "Database schema applied"
-    
-    if [ "$RESET_DB" = "1" ]; then
-        echo ""
-        print_status "${YELLOW}⚠ RESET_DB is enabled - resetting database...${NC}"
-        
-        echo "  Running: prisma migrate reset --force --skip-seed"
-        npx prisma migrate reset --force --skip-seed
-        
-        if [ $? -ne 0 ]; then
-            print_error "Failed to reset database"
-            return 1
-        fi
-        print_success "Database reset completed"
-        
-        echo ""
-        print_status "Seeding database with initial data..."
-        npx prisma db seed
-        
-        if [ $? -ne 0 ]; then
-            print_error "Seeding failed"
-            return 1
-        fi
-        print_success "Database seeding completed"
-    else
-        print_status "Skipping database reset (set RESET_DB=1 to enable full reset and seeding)"
-    fi
-    
-    return 0
+print_status "Setting up database..."
+
+if [ -z "$DATABASE_URL" ]; then
+print_error "DATABASE_URL is not set"
+return 1
+fi
+
+# Ждём готовности PostgreSQL
+if ! wait_for_postgres; then
+return 1
+fi
+
+cd /app/backend
+
+print_status "Applying database schema..."
+npx prisma db push --skip-generate
+
+if [ $? -ne 0 ]; then
+print_error "Failed to apply database schema"
+return 1
+fi
+print_success "Database schema applied"
+
+if [ "$RESET_DB" = "1" ]; then
+echo ""
+print_status "${YELLOW}⚠ RESET_DB is enabled - resetting database...${NC}"
+
+echo "  Running: prisma migrate reset --force --skip-seed"
+npx prisma migrate reset --force --skip-seed
+
+if [ $? -ne 0 ]; then
+print_error "Failed to reset database"
+return 1
+fi
+print_success "Database reset completed"
+
+echo ""
+print_status "Seeding database with initial data..."
+npx prisma db seed
+
+if [ $? -ne 0 ]; then
+print_error "Seeding failed"
+return 1
+fi
+print_success "Database seeding completed"
+else
+print_status "Skipping database reset (set RESET_DB=1 to enable full reset and seeding)"
+fi
+
+return 0
 }
 
 cleanup() {
-    echo ""
-    print_status "Shutting down services..."
-    kill $NGINX_PID $BACKEND_PID $FRONTEND_PID 2>/dev/null
-    exit 0
+echo ""
+print_status "Shutting down services..."
+kill $NGINX_PID $BACKEND_PID $FRONTEND_PID 2>/dev/null
+exit 0
 }
 
 trap cleanup INT TERM
@@ -218,8 +217,8 @@ echo ""
 
 # Настройка базы данных
 if ! setup_database; then
-    print_error "Database setup failed, exiting..."
-    exit 1
+print_error "Database setup failed, exiting..."
+exit 1
 fi
 
 echo ""
