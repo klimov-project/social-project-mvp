@@ -104,9 +104,9 @@ const resetDatabase = async (req, res) => {
     await prisma.user.deleteMany({});
     // Seed initial data
     const initialUsers = [
-      { name: 'admin', firstName: 'Admin', rating: 5.0, contacts: { email: 'admin@example.com' } },
-      { name: 'user1', firstName: 'John', rating: 4.2, contacts: { email: 'john@example.com' } },
-      { name: 'user2', firstName: 'Jane', rating: 4.8, contacts: { email: 'jane@example.com' } }
+      { login: 'admin', password: 'admin123', username: 'Admin', rating: 5.0, role: 'ADMIN', is_active: true },
+      { login: 'user1', password: 'pass123', username: 'John', rating: 4.2, role: 'USER', is_active: true },
+      { login: 'user2', password: 'pass123', username: 'Jane', rating: 4.8, role: 'USER', is_active: false }
     ];
     for (const u of initialUsers) {
       await prisma.user.create({ data: u });
