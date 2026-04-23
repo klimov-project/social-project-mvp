@@ -92,7 +92,7 @@ const signUp = async (req, res) => {
             return res.status(400).json({ message: error.message });
         }
         res.status(500).json({
-            message: 'Internal server error'
+            message: 'Internal server error 1'
         });
     }
 };
@@ -148,7 +148,7 @@ const login = async (req, res) => {
     } catch (error) {
         console.error('❌ Login error:', error);
         res.status(500).json({
-            message: 'Internal server error'
+            message: 'Internal server error 2'
         });
     }
 };
@@ -167,7 +167,7 @@ const logout = async (req, res) => {
     } catch (error) {
         console.error('❌ Logout error:', error);
         res.status(500).json({
-            message: 'Internal server error'
+            message: 'Internal server error 3'
         });
     }
 };
@@ -207,7 +207,7 @@ const me = async (req, res) => {
     } catch (error) {
         console.error('❌ Me error:', error);
         res.status(500).json({
-            message: 'Internal server error'
+            message: 'Internal server error 4'
         });
     }
 };

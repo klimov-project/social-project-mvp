@@ -17,7 +17,7 @@
         <div v-if="userStore.error" class="text-red-600 text-sm mt-2">{{ userStore.error }}</div>
       </form>
       <div class="mt-4 text-center text-sm text-gray-600">
-        <p>Demo credentials: admin / password</p>
+        <p>Demo credentials: admin / admin123</p>
       </div>
     </div>
   </div>
@@ -25,7 +25,7 @@
 
 <script setup>
 const login = ref('admin')
-const password = ref('password')
+const password = ref('admin123')
 const userStore = useUserStore()
 
 const handleLogin = async () => {
