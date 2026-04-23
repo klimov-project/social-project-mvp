@@ -22,15 +22,12 @@ export function validateSignUp(data) {
 
 export function validateLogin(data) {
 
-    console.log('🔐 Login validate 1.1:');
     const { login, password } = data;
 
-    console.log('🔐 Login validate 1.2:');
     if (!login || typeof login !== 'string') {
         throw new Error('Login is required');
     }
 
-    console.log('🔐 Login validate 1.3:');
     if (!password || typeof password !== 'string') {
         throw new Error('Password is required');
     }

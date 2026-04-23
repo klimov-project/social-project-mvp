@@ -53,44 +53,6 @@ onMounted(async () => {
       {{ userStore.error }}
     </div>
 
-    <div v-if="userStore.users.length > 0" class="space-y-4">
-      <h2 class="text-xl font-bold">Results ({{ userStore.users.length }})</h2>
-      <div
-        v-for="user in userStore.users"
-        :key="user.id"
-        class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
-        @click="goToUser(user.id)"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="font-bold text-lg">
-              {{ user.account?.username || user.login }}
-            </h3>
-            <p class="text-gray-600">@{{ user.login }}</p>
-            <p v-if="user.account?.bio" class="text-gray-500 text-sm mt-1">
-              {{ user.account.bio }}
-            </p>
-          </div>
-          <div class="text-right">
-            <div class="flex items-center space-x-1">
-              <span class="text-yellow-500">★</span>
-              <span class="font-semibold">{{
-                parseFloat(user.account?.reputation_score || 0).toFixed(1)
-              }}</span>
-            </div>
-            <p class="text-gray-600 text-sm">
-              Deals: {{ user.account?.deals_count || 0 }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div
-      v-else-if="!userStore.loading && searchQuery"
-      class="text-center py-8 text-gray-600"
-    >
-      No users found matching your search.
-    </div>
+    <UserList :users="userStore.users" @user-click="(id) => goToUser(id)" />
   </div>
 </template>

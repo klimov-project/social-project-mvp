@@ -128,35 +128,77 @@ export const useUserStore = defineStore('user', {
         throw err;
       }
     },
-    async boostRating(id: string) {
+    async mockVer(id: string) {
+      
       try {
         const config = useRuntimeConfig();
-        const res: any = await $fetch(
-          `${config.public.apiBase}/users/${id}/rating`,
-          {
-            method: 'POST',
-            body: { delta: 1.0 },
+        const mockData = {
+          avatar: null,
+          bio: null,
+          reputation_score: 0,
+          deals_count: 0,
+          positive_feedback_percent: 0,
+          verifications: {
+            fullName: {
+              lastName: 'Klimov',
+              firstName: 'Roman',
+              patronymic: '',
+            },
+            passport: {
+              series: '1231',
+              number: '123123',
+              dateOfIssue: '2025-07-18',
+              issuedBy: 'qweqweqwe',
+              photo:
+                'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA8ADwAAD/4RSgRXhpZgAATU0AKgAAAAgACQEPAAIAAAAGAAAAegEQAAIAAAAPAAAAgAESAAMAAAABAAEAAAEaAAUAAAABAAAAkAEbAAUAAAABAAAAmAEoAAMAAAABAAIAAAExAAIAAAAxAAAAoAEyAAIAAAAUAAAA0odpAAQAAAABAAAA5gAAAyZDYW5vbgBDYW5vbiBFT1MgNjAwRAAAAAAA8AAAAAEAAADwAAAAAUFkb2JlIFBob3Rvc2hvcCBMaWdodHJvb20gQ2xhc3NpYyAxMi4zIChXaW5kb3dzKQAAMjAyNDowOToxNSAwMDozMTowNwAAH4KaAAUAAAABAAACYIKdAAUAAAABAAACaIgiAAMAAAABAAEAAIgnAAMAAAABAGQAAIg',
+            },
+            contacts: {
+              email: 'gingerale.pp@gmail.com',
+              phone: '123123123',
+              countryCode: '+7',
+              telegram: 'dsfdsfsd',
+            },
+            verifiedAt: '2026-04-23T21:20:36.846Z',
+            status: 'pending',
           },
-        );
-        if (
-          res.success &&
-          this.currentUser &&
-          this.currentUser.account.id === parseInt(id)
-        ) {
-          this.currentUser.account.reputation_score = res.newRating;
-        }
-        return res;
+        };
+        const id = this.currentUser.account.id; 
+        return await $fetch(`${config.public.apiBase}/users/${id}`, {
+          method: 'POST',
+          body: mockData,
+        });
       } catch (err) {
         this.error = err.data?.message || err.message;
         throw err;
       }
     },
-    async leaveFeedback(id: string, rating: number) {
+    async updateCurrentAccount(data: Object) {
       try {
+        const id = this.currentUser.account.id;
         const config = useRuntimeConfig();
-        return await $fetch(`${config.public.apiBase}/users/${id}/feedback`, {
+        // const login = this.currentUser.user.login;
+
+        // Маппинг в модель Account
+        const payload = {
+          // id: userId,
+          // username: login || 'user',
+          avatar: null,
+          bio: null,
+          reputation_score: 0.0,
+          deals_count: 0,
+          positive_feedback_percent: 0,
+          verifications: {
+            fullName: data.fullName,
+            passport: data.passport,
+            contacts: data.contacts,
+            verifiedAt: new Date().toISOString(),
+            status: 'pending', // или 'verified'
+          },
+        };
+
+        return await $fetch(`${config.public.apiBase}/users/${id}`, {
           method: 'POST',
-          body: { rating },
+          body: payload,
         });
       } catch (err) {
         this.error = err.data?.message || err.message;

@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia';
+import { useUserStore } from '../composables/useUserStore';
+
+const userStore = useUserStore();
 
 export interface VerificationData {
   fullName: {
@@ -118,20 +121,15 @@ export const useVerificationStore = defineStore('verification', {
       this.error = null;
 
       try {
-        // Mock API call - in real app, this would send to /verify/submit
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        console.log(userStore.currentUser);
+        // {"fullName":{"lastName":"Климов","firstName":"Роман","patronymic":"Владимирович"},"passport":{"series":"1321","number":"123123","dateOfIssue":"2025-12-04","issuedBy":"qweqweqwe","photo":"data:image/jpeg;base64,/9j/"} }
+
+        await userStore.updateCurrentAccount(this.verificationData);
 
         // Simulate success
         this.isVerified = true;
         this.trustLevel = 100;
         this.currentStep = 6; // Success screen
-
-        // Save to localStorage
-        localStorage.setItem(
-          'verificationData',
-          JSON.stringify(this.verificationData),
-        );
-        localStorage.setItem('verificationStatus', 'verified');
       } catch (err) {
         this.error = err.message || 'Failed to save verification data';
       } finally {

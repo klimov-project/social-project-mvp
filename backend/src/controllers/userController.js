@@ -86,15 +86,27 @@ const adjustRating = async (req, res) => {
   }
 };
 
-const leaveFeedback = async (req, res) => {
+const updateCurrentAccount = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rating } = req.body; // rating from feedback
-    const user = await prisma.user.update({
-      where: { id },
-      data: { rating: { increment: rating } }
+    const userId = Number(id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid id format' });
+    }
+    console.log('updateUser called with id:', userId, 'and body:', req.body);
+    const account = await prisma.account.update({
+      where: { id: userId },
+      data: {
+        username: req.body.username,
+        avatar: req.body.avatar,
+        bio: req.body.bio,
+        reputation_score: req.body.reputation_score,
+        deals_count: req.body.deals_count,
+        positive_feedback_percent: req.body.positive_feedback_percent,
+        verifications: req.body.verifications, // JSON поле
+      }
     });
-    res.json({ success: true, updatedRating: user.rating });
+    res.json({ success: true, updatedAccount: account });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -174,7 +186,6 @@ export default {
   getUsers,
   getUserById,
   addUser,
-  adjustRating,
-  leaveFeedback,
+  updateCurrentAccount,
   resetDatabase
 };

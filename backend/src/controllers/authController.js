@@ -108,24 +108,20 @@ const login = async (req, res) => {
 
         const { login, password } = req.body;
 
-        console.log('🔐 Login 1:');
         // Validation
         validateLogin({ login, password });
 
-        console.log('🔐 Login 2:');
         const user = await prisma.user.findUnique({
             where: { login },
             include: { account: true }
         });
 
-        console.log('🔐 Login 3:');
         if (!user) {
             return res.status(401).json({
                 message: 'Invalid login or password'
             });
         }
 
-        console.log('🔐 Login 4:');
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
@@ -134,7 +130,6 @@ const login = async (req, res) => {
             });
         }
 
-        console.log('🔐 Login 5:');
         // Check is_active
         if (!user.is_active) {
             return res.status(403).json({
@@ -142,7 +137,6 @@ const login = async (req, res) => {
             });
         }
 
-        console.log('🔐 Login 6:');
         // Generate JWT
         const token = jwt.sign(
             { id: user.id },
@@ -152,8 +146,6 @@ const login = async (req, res) => {
 
         console.log(`✅ Successful login: ${login}`);
 
-
-        console.log('🔐 Login 7:');
         res.json({
             token,
             username: user.account.username
