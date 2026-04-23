@@ -9,7 +9,7 @@ export function validateSignUp(data) {
         throw new Error('Password must be at least 6 characters');
     }
 
-    if (!username || typeof username !== 'string' || username.length < 3 || username.length > 50) {
+    if (username && typeof username !== 'string' && username?.length < 3 || username?.length > 50) {
         throw new Error('Username must be 3-50 characters');
     }
 

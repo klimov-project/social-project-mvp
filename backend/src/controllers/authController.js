@@ -11,7 +11,7 @@ const signUp = async (req, res) => {
     try {
         console.log('📝 Sign Up request:', req.body);
 
-        const { login, password, username, referralCode } = req.body;
+        const { login, password, username = login, referralCode } = req.body;
 
         // Validation
         validateSignUp({ login, password, username, referralCode });

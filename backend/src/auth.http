@@ -2,7 +2,7 @@
 @login = user1
 @password = pass123
 @contentType = application/json
-@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTc2ODY4MDQ5NDQ4NiwidXNlcm5hbWUiOiJ1c2VyXzEiLCJpYXQiOjE3NzY3OTk5OTUsImV4cCI6MTc3NjgwMzU5NX0.3fPo9P7AfW47vnCX5itu4yM-Rb_Y0n-IGBH0GAgB-p8
+@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzc2OTM2MDM3LCJleHAiOjE3NzY5Mzk2Mzd9.E5Sb9GXlS5cUHRE9KuWO_EIZxpeMn6Rvj_4youSthLo
 
 
 ### Проверка работы сервера
@@ -56,5 +56,5 @@ POST {{host_api}}/auth/sign-up
 Content-Type: {{contentType}}
 
 {
-  "username": "{{username}}"
+   "login": "{{login}}"
 }
