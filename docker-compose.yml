@@ -21,6 +21,7 @@ services:
       - '4000:4000'
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/socialproject
+      JWT_SECRET: your-secret-key
       PORT: 4000
     depends_on:
       postgres:

@@ -1,38 +1,41 @@
 <template>
-  <div class="bg-white p-8 rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold mb-6">Search Users</h1>
-    <div class="flex space-x-4 mb-8">
-      <input v-model="searchQuery" @input="handleSearch" placeholder="Search by name or ID..." class="flex-grow border border-gray-300 rounded-md shadow-sm p-3 focus:ring-2 focus:ring-blue-500 outline-none" />
-      <button @click="handleSearch" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition">
-        Search
-      </button>
+  <div class="space-y-6">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h1 class="text-2xl font-bold mb-4">Search Users</h1>
+      <div class="flex gap-2">
+        <input v-model="searchQuery" @keyup.enter="handleSearch" type="text" placeholder="Search by username or login..." class="flex-1 border border-gray-300 rounded-md p-2" />
+        <button @click="handleSearch" :disabled="userStore.loading" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50">
+          {{ userStore.loading ? 'Searching...' : 'Search' }}
+        </button>
+      </div>
     </div>
 
-    <div v-if="userStore.loading" class="text-center py-12">
-      <div class="animate-spin text-4xl text-blue-600">↻</div>
-      <p class="mt-4 text-gray-500">Searching users...</p>
+    <div v-if="userStore.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      {{ userStore.error }}
     </div>
 
-    <div v-else-if="userStore.users.length === 0" class="text-center py-12 text-gray-500">
-      No users found matching your search.
-    </div>
-
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-for="user in userStore.users" :key="user.id" @click="navigateTo(`/user/${user.id}`)" class="border p-4 rounded-lg hover:border-blue-500 cursor-pointer transition flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
-            {{ user.firstName[0] }}
-          </div>
+    <div v-if="userStore.users.length > 0" class="space-y-4">
+      <h2 class="text-xl font-bold">Results ({{ userStore.users.length }})</h2>
+      <div v-for="user in userStore.users" :key="user.id" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer" @click="goToUser(user.id)">
+        <div class="flex items-center justify-between">
           <div>
-            <h3 class="font-bold">{{ user.firstName }}</h3>
-            <p class="text-sm text-gray-500">@{{ user.name }}</p>
+            <h3 class="font-bold text-lg">{{ user.account?.username || user.login }}</h3>
+            <p class="text-gray-600">@{{ user.login }}</p>
+            <p v-if="user.account?.bio" class="text-gray-500 text-sm mt-1">{{ user.account.bio }}</p>
           </div>
-        </div>
-        <div class="flex items-center space-x-1">
-          <span class="text-yellow-500">★</span>
-          <span class="font-semibold">{{ user.rating.toFixed(1) }}</span>
+          <div class="text-right">
+            <div class="flex items-center space-x-1">
+              <span class="text-yellow-500">★</span>
+              <span class="font-semibold">{{ parseFloat(user.account?.reputation_score || 0).toFixed(1) }}</span>
+            </div>
+            <p class="text-gray-600 text-sm">Deals: {{ user.account?.deals_count || 0 }}</p>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div v-else-if="!userStore.loading && searchQuery" class="text-center py-8 text-gray-600">
+      No users found matching your search.
     </div>
   </div>
 </template>
@@ -42,10 +45,22 @@ const userStore = useUserStore()
 const searchQuery = ref('')
 
 const handleSearch = async () => {
-  await userStore.fetchUsers(searchQuery.value)
+  if (searchQuery.value.trim()) {
+    await userStore.fetchUsers(searchQuery.value)
+  }
 }
 
-onMounted(() => {
-  userStore.fetchUsers()
+const goToUser = (userId) => {
+  navigateTo(`/user/${userId}`)
+}
+
+onMounted(async () => {
+  if (!userStore.currentUser) {
+    try {
+      await userStore.fetchMe()
+    } catch (err) {
+      navigateTo('/')
+    }
+  }
 })
 </script>

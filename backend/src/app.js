@@ -14,6 +14,17 @@ app.use(json());
 
 app.use('/api', authRoutes, userRoutes);
 
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('Global error:', err);
+    if (err.message) {
+        if (err.message.includes('must be') || err.message.includes('Invalid') || err.message.includes('already exists')) {
+            return res.status(400).json({ message: err.message });
+        }
+    }
+    res.status(500).json({ message: 'Internal server error' });
+});
+
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

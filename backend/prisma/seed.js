@@ -1,28 +1,41 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
 const prisma = new PrismaClient();
 
 console.log('Starting database seeding...');
 
 async function main() {
+  await prisma.account.deleteMany({});
   await prisma.user.deleteMany({});
-  
-  const users = [];
-  for (let i = 1; i <= 20; i++) {
-    users.push({
-      name: `user${i}`,
-      firstName: `First${i}`,
-      rating: Math.floor(Math.random() * 50) / 10,
-      deposit: Math.floor(Math.random() * 1000),
-      contacts: { email: `user${i}@example.com`, telegram: `@user${i}` },
-      referral: i > 5 ? `user${Math.floor(Math.random() * 5) + 1}` : null
+
+  const users = [
+    { login: 'admin', password: 'admin123', username: 'Admin', role: 'ADMIN', is_active: true },
+    { login: 'user1', password: 'pass123', username: 'User1', role: 'USER', is_active: true },
+    { login: 'user2', password: 'pass123', username: 'User2', role: 'USER', is_active: false }
+  ];
+
+  for (const u of users) {
+    const password_hash = await bcrypt.hash(u.password, 10);
+    const user = await prisma.user.create({
+      data: {
+        login: u.login,
+        password_hash,
+        role: u.role,
+        is_active: u.is_active
+      }
+    });
+
+    await prisma.account.create({
+      data: {
+        id: user.id,
+        username: u.username,
+        verifications: {}
+      }
     });
   }
 
-  for (const user of users) {
-    await prisma.user.create({ data: user });
-  }
-  
-  console.log('Database seeded with 20 users');
+  console.log('Database seeded with users');
 }
 
 main()
