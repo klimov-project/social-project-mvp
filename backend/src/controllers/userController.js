@@ -102,6 +102,7 @@ const leaveFeedback = async (req, res) => {
 const resetDatabase = async (req, res) => {
   try {
     await prisma.user.deleteMany({});
+    await prisma.account.deleteMany({});
     // Seed initial data
     const initialUsers = [
       { login: 'admin', password: 'admin123', username: 'Admin', rating: 5.0, role: 'ADMIN', is_active: true },
@@ -109,7 +110,23 @@ const resetDatabase = async (req, res) => {
       { login: 'user2', password: 'pass123', username: 'Jane', rating: 4.8, role: 'USER', is_active: false }
     ];
     for (const u of initialUsers) {
-      await prisma.user.create({ data: u });
+      const password_hash = await bcrypt.hash(u.password, 10);
+      const user = await prisma.user.create({
+        data: {
+          login: u.login,
+          password_hash,
+          role: u.role,
+          is_active: u.is_active
+        }
+      });
+
+      await prisma.account.create({
+        data: {
+          id: user.id,
+          username: u.username,
+          verifications: {}
+        }
+      });
     }
     res.json({ success: true });
   } catch (error) {
