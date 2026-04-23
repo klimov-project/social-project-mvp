@@ -76,7 +76,7 @@ const handleResetDatabase = async () => {
         >
           {{ userStore.is_resetting ? 'Resetting...' : 'Reset Database' }}
         </button>
-      </div> -->
+        -->
     </div>
   </div>
 </template>
