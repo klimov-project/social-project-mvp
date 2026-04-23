@@ -1,3 +1,4 @@
+dockerfile
 # ============ STAGE 1: Build Backend ============
 FROM node:22-slim AS backend-builder
 
@@ -23,8 +24,8 @@ RUN npm run build
 # ============ STAGE 3: Runtime ============
 FROM node:22-slim
 
-# Устанавливаем curl для healthcheck, nginx и netcat для проверки портов
-RUN apt-get update && apt-get install -y curl nginx netcat-openbsd && rm -rf /var/lib/apt/lists/*
+# Устанавливаем curl для healthcheck, nginx, netcat и postgresql-client
+RUN apt-get update && apt-get install -y curl nginx netcat-openbsd postgresql-client && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -65,7 +66,7 @@ http {
 }
 EOF
 
-# Создаём скрипт запуска
+# Создаём скрипт запуска с ожиданием БД
 RUN cat > /app/start.sh << 'EOF'
 #!/bin/sh
 
@@ -74,7 +75,7 @@ RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 BLUE="\033[0;34m"
-NC="\033[0m" # No Color
+NC="\033[0m"
 
 print_status() {
     echo "${BLUE}[$(date +"%H:%M:%S")]${NC} $1"
@@ -86,6 +87,39 @@ print_success() {
 
 print_error() {
     echo "${RED}✗${NC} $1"
+}
+
+# Функция ожидания PostgreSQL
+wait_for_postgres() {
+    local max_attempts=30
+    local attempt=1
+    
+    print_status "Waiting for PostgreSQL to be ready..."
+    
+    # Извлекаем host и port из DATABASE_URL
+    DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\1/p')
+    DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):\([0-9]*\)\/.*/\2/p')
+    
+    if [ -z "$DB_HOST" ]; then
+        DB_HOST="localhost"
+        DB_PORT="5432"
+    fi
+    
+    print_status "Connecting to PostgreSQL at $DB_HOST:$DB_PORT"
+    
+    while [ $attempt -le $max_attempts ]; do
+        if PGPASSWORD=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p') pg_isready -h $DB_HOST -p $DB_PORT -U $(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p') 2>/dev/null; then
+            print_success "PostgreSQL is ready (attempt $attempt)"
+            return 0
+        fi
+        
+        echo "  Attempt $attempt/$max_attempts: PostgreSQL not ready, waiting 2s..."
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    
+    print_error "PostgreSQL failed to become ready after $max_attempts attempts"
+    return 1
 }
 
 wait_for_service() {
@@ -122,14 +156,12 @@ setup_database() {
         return 1
     fi
     
-    cd /app/backend
-    
-    print_status "Checking database connection..."
-    if ! npx prisma db execute --stdin --sql "SELECT 1" 2>/dev/null; then
-        print_error "Cannot connect to database"
+    # Ждём готовности PostgreSQL
+    if ! wait_for_postgres; then
         return 1
     fi
-    print_success "Database connection established"
+    
+    cd /app/backend
     
     print_status "Applying database schema..."
     npx prisma db push --skip-generate
@@ -184,6 +216,7 @@ echo "  Starting Services"
 echo "========================================="
 echo ""
 
+# Настройка базы данных
 if ! setup_database; then
     print_error "Database setup failed, exiting..."
     exit 1
