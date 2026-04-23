@@ -162,15 +162,6 @@ fi
 
 cd /app/backend
 
-print_status "Applying database schema..."
-npx prisma db push --skip-generate
-
-if [ $? -ne 0 ]; then
-print_error "Failed to apply database schema"
-return 1
-fi
-print_success "Database schema applied"
-
 if [ "$RESET_DB" = "1" ]; then
 echo ""
 print_status "${YELLOW}⚠ RESET_DB is enabled - resetting database...${NC}"
@@ -183,6 +174,15 @@ print_error "Failed to reset database"
 return 1
 fi
 print_success "Database reset completed"
+
+print_status "Applying database schema..."
+npx prisma db push --skip-generate
+
+if [ $? -ne 0 ]; then
+print_error "Failed to apply database schema"
+return 1
+fi
+print_success "Database schema applied"
 
 echo ""
 print_status "Seeding database with initial data..."
