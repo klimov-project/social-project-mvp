@@ -16,13 +16,13 @@ app.use('/api', authRoutes, userRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('Global error:', err);
-    if (err.message) {
-        if (err.message.includes('must be') || err.message.includes('Invalid') || err.message.includes('already exists')) {
-            return res.status(400).json({ message: err.message });
-        }
+  console.error('Global error:', err);
+  if (err.message) {
+    if (err.message.includes('must be') || err.message.includes('Invalid') || err.message.includes('already exists')) {
+      return res.status(400).json({ message: err.message });
     }
-    res.status(500).json({ message: 'Internal server error' });
+  }
+  res.status(500).json({ message: 'Internal server error 0' });
 });
 
 if (process.env.NODE_ENV !== 'test') {

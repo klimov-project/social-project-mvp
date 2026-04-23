@@ -2,7 +2,7 @@
 @login = user1
 @password = pass123
 @contentType = application/json
-@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzc2OTM2MDM3LCJleHAiOjE3NzY5Mzk2Mzd9.E5Sb9GXlS5cUHRE9KuWO_EIZxpeMn6Rvj_4youSthLo
+@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzc2OTM4MzE3LCJleHAiOjE3NzY5NDE5MTd9.9B7EW2GHBvvjtSi1ytfj9-9SIUGb1_u10q6AeW4y2s4
 
 
 ### Проверка работы сервера

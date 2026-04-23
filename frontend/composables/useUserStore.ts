@@ -5,6 +5,7 @@ export const useUserStore = defineStore('user', {
     currentUser: null as any,
     users: [] as any[],
     loading: false,
+    is_resetting: false,
     error: null as string | null,
     token: null as string | null,
   }),
@@ -163,6 +164,7 @@ export const useUserStore = defineStore('user', {
       }
     },
     async resetDatabase() {
+      this.is_resetting = true;
       try {
         const config = useRuntimeConfig();
         return await $fetch(`${config.public.apiBase}/reset`, {
@@ -171,6 +173,8 @@ export const useUserStore = defineStore('user', {
       } catch (err) {
         this.error = err.data?.message || err.message;
         throw err;
+      } finally {
+        this.is_resetting = false;
       }
     },
     setCurrentUser(user: any) {

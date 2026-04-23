@@ -8,11 +8,10 @@ const getUsers = async (req, res) => {
   console.log('getUsers called with query:', req.query);
   try {
     const { q } = req.query;
-    const users = await prisma.user.findMany({
+    const users = await prisma.account.findMany({
       where: q ? {
         OR: [
-          { name: { contains: q, mode: 'insensitive' } },
-          { firstName: { contains: q, mode: 'insensitive' } }
+          { username: { contains: q, mode: 'insensitive' } }
         ],
       } : {},
     });
