@@ -7,6 +7,11 @@ import { addToBlacklist } from '../middleware/auth.js';
 
 const prisma = new PrismaClient();
 
+if (!process.env.JWT_SECRET) {
+    console.error('❌ FATAL: JWT_SECRET is not set!');
+    process.exit(1);
+}
+
 const signUp = async (req, res) => {
     try {
         console.log('📝 Sign Up request:', req.body);

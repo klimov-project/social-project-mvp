@@ -121,6 +121,13 @@ print_error "PostgreSQL failed to become ready after $max_attempts attempts"
 return 1
 }
 
+if [ -z "$JWT_SECRET" ]; then
+    print_error "JWT_SECRET is not set"
+    print_error "Please set JWT_SECRET environment variable"
+    exit 1
+fi
+print_success "JWT_SECRET is configured"
+
 wait_for_service() {
 local port=$1
 local name=$2
