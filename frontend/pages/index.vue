@@ -67,8 +67,8 @@ const handleResetDatabase = async () => {
         <p>Demo credentials: admin / admin123</p>
       </div>
 
-      <!-- Красная кнопка внизу -->
-      <div class="mt-6">
+      <!-- Reset db on deploy -->
+      <!-- <div class="mt-6">
         <button
           @click="handleResetDatabase"
           :disabled="userStore.loading"
@@ -76,7 +76,7 @@ const handleResetDatabase = async () => {
         >
           {{ userStore.is_resetting ? 'Resetting...' : 'Reset Database' }}
         </button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
