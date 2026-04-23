@@ -99,16 +99,37 @@ const leaveFeedback = async (req, res) => {
   }
 };
 
+async function tableExists(tableName) {
+  try {
+    await prisma.$queryRaw`SELECT 1 FROM ${Prisma.raw(tableName)} LIMIT 1`;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 const resetDatabase = async (req, res) => {
   try {
-    await prisma.user.deleteMany({});
-    await prisma.account.deleteMany({});
+    const userTableExists = await tableExists('User');
+    const accountTableExists = await tableExists('Account');
+
+    if (userTableExists) {
+      await prisma.user.deleteMany({});
+      console.log('Cleared users table');
+    }
+
+    if (accountTableExists) {
+      await prisma.account.deleteMany({});
+      console.log('Cleared accounts table');
+    }
+
     // Seed initial data
     const initialUsers = [
       { login: 'admin', password: 'admin123', username: 'Admin', rating: 5.0, role: 'ADMIN', is_active: true },
       { login: 'user1', password: 'pass123', username: 'John', rating: 4.2, role: 'USER', is_active: true },
       { login: 'user2', password: 'pass123', username: 'Jane', rating: 4.8, role: 'USER', is_active: false }
     ];
+
     for (const u of initialUsers) {
       const password_hash = await bcrypt.hash(u.password, 10);
       const user = await prisma.user.create({

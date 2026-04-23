@@ -5,9 +5,28 @@ const prisma = new PrismaClient();
 
 console.log('Starting database seeding...');
 
+async function tableExists(tableName) {
+  try {
+    await prisma.$queryRaw`SELECT 1 FROM ${Prisma.raw(tableName)} LIMIT 1`;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function main() {
-  await prisma.account.deleteMany({});
-  await prisma.user.deleteMany({});
+  const userTableExists = await tableExists('User');
+  const accountTableExists = await tableExists('Account');
+
+  if (accountTableExists) {
+    await prisma.account.deleteMany({});
+    console.log('Cleared accounts table');
+  }
+
+  if (userTableExists) {
+    await prisma.user.deleteMany({});
+    console.log('Cleared users table');
+  }
 
   const users = [
     { login: 'admin', password: 'admin123', username: 'Admin', role: 'ADMIN', is_active: true },

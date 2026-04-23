@@ -107,7 +107,15 @@ RUN printf '#!/bin/sh\n\
     if [ -n "$DATABASE_URL" ]; then\n\
     echo "Running Prisma setup..."\n\
     npx prisma db push --skip-generate\n\
-    npx prisma db seed 2>/dev/null || echo "Seeding skipped"\n\
+    \n\
+    # Сброс базы данных: если RESET_DB=1 - очищает и делает seed\n\
+    # Если RESET_DB=0 или не установлена - только применяет миграции без seed\n\
+    if [ "$RESET_DB" = "1" ]; then\n\
+      echo "Reset DB enabled - clearing and reseeding..."\n\
+      npx prisma db seed || echo "Seeding failed"\n\
+    else\n\
+      echo "Skipping seed (set RESET_DB=1 to enable)"\n\
+    fi\n\
     fi\n\
     \n\
     node src/app.js 2>&1 &\n\
