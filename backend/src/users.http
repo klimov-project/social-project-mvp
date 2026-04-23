@@ -1,0 +1,45 @@
+@host_api = http://localhost:4000/api
+@login = user1
+@password = pass123
+@contentType = application/json
+@temporaryJWT = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzc2OTM4MzE3LCJleHAiOjE3NzY5NDE5MTd9.9B7EW2GHBvvjtSi1ytfj9-9SIUGb1_u10q6AeW4y2s4
+
+
+### Вход в систему
+# @name login
+POST {{host_api}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "{{login}}",
+  "password": "{{password}}"
+}
+
+### Поиск пользователей
+GET {{host_api}}/users?q=user
+Authorization: {{temporaryJWT}}
+Content-Type: {{contentType}}
+
+
+### Выход пользователя
+POST {{host_api}}/auth/logout
+Authorization: {{temporaryJWT}}
+Content-Type: {{contentType}}
+
+
+### Вход с неверными данными
+POST {{host_api}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "wrong",
+  "password": "wrong"
+}
+
+### Регистрация с неполными данными
+POST {{host_api}}/auth/sign-up
+Content-Type: {{contentType}}
+
+{
+   "login": "{{login}}"
+}

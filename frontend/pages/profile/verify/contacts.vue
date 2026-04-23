@@ -101,11 +101,6 @@ onMounted(() => {
             }}
           </span>
         </div>
-        <h1>
-          isTelegramValid: {{ isTelegramValid }} <br />
-          isEmailValid: {{ isEmailValid }} <br />
-          isContactsValid: {{ isContactsValid }}
-        </h1>
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div
             class="bg-blue-600 h-2 rounded-full transition-all duration-300"
@@ -240,7 +235,7 @@ onMounted(() => {
             :disabled="!isContactsValid"
             class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
           >
-            Next ??? {{ isContactsValid }}
+            Next
           </button>
         </div>
       </form>
