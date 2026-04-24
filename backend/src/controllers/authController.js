@@ -216,10 +216,99 @@ const me = async (req, res) => {
         });
     }
 };
+const activate = async (req, res) => {
+    try {
+        const { id: userIdToActivate } = req.params;
+        const { id: currentUserId } = req.user;
+
+        const targetUserId = parseInt(userIdToActivate, 10);
+        const actorUserId = parseInt(currentUserId, 10);
+
+        if (isNaN(targetUserId) || isNaN(actorUserId)) {
+            return res.status(400).json({
+                message: 'Invalid user ID format'
+            });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: actorUserId }
+        });
+
+        console.log(`📝 Activate request: user ${actorUserId} (${user?.role}) wants to activate user ${targetUserId}`);
+
+        if (!user || user.role !== 'ADMIN') {
+            return res.status(403).json({
+                message: 'Forbidden. Admin access required to activate accounts'
+            });
+        }
+
+        if (actorUserId === targetUserId) {
+            return res.status(400).json({
+                message: 'Cannot activate your own account'
+            });
+        }
+
+        const userToActivate = await prisma.user.findFirst({
+            where: {
+                id: targetUserId,
+                is_active: false
+            },
+            include: { account: true }
+        });
+
+        if (!userToActivate) {
+            return res.status(404).json({
+                message: 'User not found or already activated'
+            });
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: targetUserId },
+            data: {
+                is_active: true,
+                updated_at: new Date()
+            }
+        });
+
+        console.log(`✅ User activated: ${userToActivate.login} (ID: ${targetUserId}) by admin: ${actorUserId}`);
+
+        const userWithAccount = await prisma.user.findUnique({
+            where: { id: targetUserId },
+            include: { account: true }
+        });
+
+        res.json({
+            message: 'Account activated successfully',
+            user: {
+                id: userWithAccount.id,
+                login: userWithAccount.login,
+                role: userWithAccount.role,
+                refer_id: userWithAccount.refer_id,
+                is_active: userWithAccount.is_active
+            },
+            account: {
+                id: userWithAccount.account.id,
+                username: userWithAccount.account.username,
+                avatar: userWithAccount.account.avatar,
+                bio: userWithAccount.account.bio,
+                reputation_score: userWithAccount.account.reputation_score,
+                deals_count: userWithAccount.account.deals_count,
+                positive_feedback_percent: userWithAccount.account.positive_feedback_percent,
+                verifications: userWithAccount.account.verifications
+            }
+        });
+    } catch (error) {
+        console.error('❌ Activate error:', error);
+        res.status(500).json({
+            message: 'Internal server error during activation'
+        });
+    }
+};
 
 export default {
     signUp,
     login,
     logout,
-    me
+    me,
+    activate
 };

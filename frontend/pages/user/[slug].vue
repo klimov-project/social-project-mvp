@@ -4,18 +4,21 @@ const userStore = useUserStore();
 const user = ref(null);
 const ratingLoading = ref(false);
 
-const handleRating = async () => {
+const handleActivate = async () => {
   ratingLoading.value = true;
   try {
-    await userStore.boostRating(route.params.slug);
-    alert('Rating updated successfully!');
+    await userStore.activateAccount(route.params.slug);
+    alert('Activation status updated successfully!');
+    user.value = await userStore.fetchUserById(route.params.slug);
   } catch (err) {
     console.error('Rating failed:', err);
-    alert('Failed to update rating');
+    alert('Failed to activate');
   } finally {
     ratingLoading.value = false;
   }
 };
+
+const isActivated = computed(() => user.value.is_active);
 
 onMounted(async () => {
   if (!userStore.currentUser) {
@@ -29,6 +32,7 @@ onMounted(async () => {
 
   try {
     user.value = await userStore.fetchUserById(route.params.slug);
+    console.log('user.value', user.value);
   } catch (err) {
     console.error('Failed to load user:', err);
     navigateTo('/search');
@@ -75,12 +79,18 @@ onMounted(async () => {
 
     <div class="mt-8 flex space-x-4">
       <button
-        @click="handleRating"
-        :disabled="ratingLoading"
+        @click="handleActivate"
+        :disabled="ratingLoading || isActivated"
         class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:bg-green-300 transition"
       >
         <span v-if="ratingLoading" class="animate-spin mr-2">↻</span>
-        {{ ratingLoading ? 'Processing...' : 'Leave Rating' }}
+        {{
+          isActivated
+            ? 'Activated'
+            : ratingLoading
+            ? 'Processing...'
+            : 'Activate User'
+        }}
       </button>
       <NuxtLink
         to="/search"

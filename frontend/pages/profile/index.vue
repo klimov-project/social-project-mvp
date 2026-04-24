@@ -2,18 +2,16 @@
 const userStore = useUserStore();
 const verifying = ref(false);
 
+if (!userStore.currentUser) {
+  navigateTo('/');
+}
+
 const handleVerify = async () => {
   navigateTo('/profile/verify');
 };
 
 onMounted(async () => {
-  if (!userStore.currentUser) {
-    try {
-      await userStore.fetchMe();
-    } catch (err) {
-      navigateTo('/');
-    }
-  }
+  await userStore.fetchMe();
 });
 
 // Вычисляемые свойства для удобства
@@ -37,6 +35,20 @@ const verifiedAt = computed(() => {
   if (!v) return null;
   return new Date(v).toLocaleString('ru-RU');
 });
+
+const copyProfileLink = async () => {
+  const userId = userStore.currentUser.user?.id;
+  if (!userId) return;
+
+  const link = `/user/${userId}`;
+
+  try {
+    await navigator.clipboard.writeText(window.location.origin + link);
+    alert('Ссылка скопирована!');
+  } catch (err) {
+    console.error('Не удалось скопировать:', err);
+  }
+};
 </script>
 
 <template>
@@ -63,10 +75,31 @@ const verifiedAt = computed(() => {
                 @{{ userStore.currentUser.user?.login }}
               </p>
             </div>
-            <div class="bg-white/20 backdrop-blur rounded-full px-4 py-2">
-              <span class="font-semibold">{{
-                userStore.currentUser.user?.role
-              }}</span>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                class="p-1.5 rounded-full px-4 py-2 bg-white/20 hover:bg-white/30 transition-colors"
+                title="Поделиться профилем"
+                @click="copyProfileLink"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
             </div>
           </div>
 

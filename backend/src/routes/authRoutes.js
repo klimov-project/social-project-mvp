@@ -13,5 +13,6 @@ router.get('/auth/me', authMiddleware, authController.me);
 router.post('/auth/sign-up', authController.signUp);
 router.post('/auth/login', authController.login);
 router.post('/auth/logout', authMiddleware, authController.logout);
+router.post('/auth/activate/:id', authMiddleware, authController.activate);
 
 export default router;
