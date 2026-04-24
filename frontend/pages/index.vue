@@ -1,4 +1,6 @@
 <script setup>
+import Demologin from '../components/Demologin.vue';
+
 const login = ref('admin');
 const password = ref('admin123');
 const userStore = useUserStore();

@@ -33,9 +33,7 @@ const handleRegister = async () => {
     <div class="mb-4 flex gap-2">
       <button
         @click="showPhoneAuth = true"
-        :class="
-          showPhoneAuth ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-        "
+        :class="showPhoneAuth ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
         class="px-4 py-2 rounded-md transition"
       >
         📱 Phone Login
