@@ -9,13 +9,53 @@ const getUsers = async (req, res) => {
   console.log('getUsers called with query:', req.query);
   try {
     const { q } = req.query;
-    const users = await prisma.account.findMany({
+    
+    const accounts = await prisma.account.findMany({
       where: q ? {
-        OR: [
-          { username: { contains: q, mode: 'insensitive' } }
-        ],
+        username: { 
+          contains: q, 
+          mode: 'insensitive' 
+        }
       } : {},
+      include: { 
+        user: {
+          select: {
+            id: true,
+            login: true,
+            role: true,
+            refer_id: true,
+            is_active: true,
+            created_at: true,
+            updated_at: true
+          }
+        }
+      }
     });
+ 
+    const users = accounts.map(account => ({
+      user: {
+        id: account.user.id,
+        login: account.user.login,
+        role: account.user.role,
+        refer_id: account.user.refer_id,
+        is_active: account.user.is_active,
+        created_at: account.user.created_at,
+        updated_at: account.user.updated_at,
+      },
+      account: {
+        id: account.id,
+        username: account.username,
+        avatar: account.avatar,
+        bio: account.bio,
+        reputation_score: account.reputation_score,
+        deals_count: account.deals_count,
+        positive_feedback_percent: account.positive_feedback_percent,
+        verifications: account.verifications,
+        created_at: account.created_at,
+        updated_at: account.updated_at
+      }
+    }));
+
     console.log(`Found ${users.length} users`);
     res.json(users);
   } catch (error) {
@@ -23,6 +63,7 @@ const getUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 const getUserById = async (req, res) => {
   try {

@@ -107,7 +107,7 @@ const goToUser = (id) => {
     </div>
 
     <div
-      v-for="user in sortedUsers"
+      v-for="user in users"
       :key="user.id"
       class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer border border-gray-100 hover:border-blue-200"
       @click="goToUser(user.id)"
@@ -119,40 +119,51 @@ const goToUser = (id) => {
             <!-- Аватар -->
             <div
               class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
-              :class="getAvatarColor(user.reputation_score)"
+              :class="getAvatarColor(user.account.reputation_score)"
             >
-              {{ (user.username || 'U')[0].toUpperCase() }}
+              {{ (user.account.username || 'U')[0].toUpperCase() }}
             </div>
 
             <!-- Информация о пользователе -->
             <div class="flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="font-bold text-lg">
-                  {{ user.username }}
+                  {{ user.account.username }}
                 </h3>
                 <!-- Бейдж верификации -->
                 <span
-                  v-if="user.verifications?.status === 'verified'"
+                  v-if="user.account.verifications?.status === 'verified'"
                   class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full"
                 >
                   ✓ Verified
                 </span>
                 <span
-                  v-else-if="user.verifications?.status === 'pending'"
+                  v-else-if="user.account.verifications?.status === 'pending'"
                   class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full"
                 >
                   ⏳ Pending
                 </span>
                 <!-- Бейдж админа -->
                 <span
-                  v-if="user.role === 'ADMIN'"
+                  v-if="user.user.role === 'ADMIN'"
                   class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full"
                 >
                   Admin
                 </span>
+
+                <span
+                  v-if="user.user.is_active"
+                  class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full"
+                >
+                  Activated
+                </span>
+                <span
+                  v-else
+                  class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">Not Activated</span>
+                
               </div>
 
-              <p class="text-gray-500 text-sm">ID: {{ user.id }}</p>
+              <p class="text-gray-500 text-sm">ID: {{ user.account.id }}</p>
 
               <!-- Контакты (иконками) -->
               <div
@@ -160,22 +171,22 @@ const goToUser = (id) => {
                 class="flex items-center gap-2 mt-2 text-gray-400 text-xs"
               >
                 <span
-                  v-if="user.verifications?.contacts?.email"
+                  v-if="user.account.verifications?.contacts?.email"
                   title="Email verified"
                   >📧</span
                 >
                 <span
-                  v-if="user.verifications?.contacts?.phone"
+                  v-if="user.account.verifications?.contacts?.phone"
                   title="Phone verified"
                   >📱</span
                 >
                 <span
-                  v-if="user.verifications?.contacts?.telegram"
+                  v-if="user.account.verifications?.contacts?.telegram"
                   title="Telegram"
                   >💬</span
                 >
                 <span
-                  v-if="user.verifications?.passport"
+                  v-if="user.account.verifications?.passport"
                   title="Passport verified"
                   >🛂</span
                 >
@@ -183,10 +194,10 @@ const goToUser = (id) => {
 
               <!-- Bio -->
               <p
-                v-if="user.bio"
+                v-if="user.account.bio"
                 class="text-gray-600 text-sm mt-2 line-clamp-1"
               >
-                {{ user.bio }}
+                {{ user.account.bio }}
               </p>
             </div>
           </div>
@@ -196,44 +207,44 @@ const goToUser = (id) => {
             <div class="flex items-center space-x-1">
               <span class="text-yellow-500 text-lg">★</span>
               <span class="font-bold text-lg">
-                {{ parseFloat(user.reputation_score || 0).toFixed(1) }}
+                {{ parseFloat(user.account.reputation_score || 0).toFixed(1) }}
               </span>
             </div>
             <div class="text-gray-500 text-sm mt-1">
-              📊 {{ user.deals_count || 0 }} deals
+              📊 {{ user.account.deals_count || 0 }} deals
             </div>
             <div
               class="text-green-600 text-sm font-medium mt-1"
-              v-if="user.positive_feedback_percent"
+              v-if="user.account.positive_feedback_percent"
             >
-              👍 {{ user.positive_feedback_percent }}%
+              👍 {{ user.account.positive_feedback_percent }}%
             </div>
           </div>
         </div>
 
         <!-- Дополнительная информация (расширяемая) -->
         <div
-          v-if="user.verifications?.fullName"
+          v-if="user.account.verifications?.fullName"
           class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 flex items-center gap-4"
         >
           <span
             >👤
             {{
               [
-                user.verifications.fullName.lastName,
-                user.verifications.fullName.firstName,
+                user.account.verifications.fullName.lastName,
+                user.account.verifications.fullName.firstName,
               ]
                 .filter(Boolean)
                 .join(' ')
             }}</span
           >
-          <span>📅 Joined: {{ formatDate(user.created_at) }}</span>
+          <span>📅 Joined: {{ formatDate(user.account.created_at) }}</span>
         </div>
         <div
           v-else
           class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 flex justify-end"
         >
-          <span>📅 Joined: {{ formatDate(user.created_at) }}</span>
+          <span>📅 Joined: {{ formatDate(user.account.created_at) }}</span>
         </div>
       </div>
     </div>
