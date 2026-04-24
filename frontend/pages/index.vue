@@ -23,7 +23,7 @@ if (userStore.currentUser) {
       <h1 class="text-2xl font-bold mb-6 text-center">
         Login to Social Project
       </h1>
-      <Demologin />
+      <DemoLogin />
       <!-- <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Login</label>
