@@ -11,17 +11,18 @@
     "test:unit": "vitest run --coverage"
   },
   "dependencies": {
-    "nuxt": "^4.0.0-rc.2",
-    "vue": "^3.4.0",
-    "pinia": "^2.1.7",
-    "@pinia/nuxt": "^0.5.1",
+    "@clerk/nuxt": "^2.2.6",
     "@nuxtjs/tailwindcss": "^6.10.0",
-    "lucide-vue-next": "^0.300.0"
+    "@pinia/nuxt": "^0.5.1",
+    "lucide-vue-next": "^0.300.0",
+    "nuxt": "^4.0.0-rc.2",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0"
   },
   "devDependencies": {
-    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
     "@vue/test-utils": "^2.4.0",
     "jsdom": "^23.0.0",
-    "@vitest/coverage-v8": "^1.0.0"
+    "vitest": "^1.0.0"
   }
 }

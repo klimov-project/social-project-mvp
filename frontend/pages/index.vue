@@ -1,28 +1,22 @@
 <script setup>
+import Demologin from '../components/Demologin.vue';
+
 const login = ref('admin');
 const password = ref('admin123');
 const userStore = useUserStore();
 
-const handleLogin = async () => {
-  try {
-    await userStore.login(login.value, password.value);
-    await userStore.fetchMe();
-    navigateTo('/profile');
-  } catch (err) {
-    console.error('Login failed:', err);
-  }
-};
-
-const handleResetDatabase = async () => {
-  try {
-    await userStore.resetDatabase();
-    // Опционально: показать уведомление об успехе
-    alert('Database has been reset successfully');
-  } catch (err) {
-    console.error('Reset failed:', err);
-    alert('Failed to reset database: ' + (err.message || 'Unknown error'));
-  }
-};
+if (userStore.currentUser) {
+  navigateTo('/profile');
+}
+// const handleLogin = async () => {
+//   try {
+//     await userStore.login(login.value, password.value);
+//     await userStore.fetchMe();
+//     navigateTo('/profile');
+//   } catch (err) {
+//     console.error('Login failed:', err);
+//   }
+// };
 </script>
 
 <template>
@@ -31,7 +25,8 @@ const handleResetDatabase = async () => {
       <h1 class="text-2xl font-bold mb-6 text-center">
         Login to Social Project
       </h1>
-      <form @submit.prevent="handleLogin" class="space-y-4">
+      <Demologin />
+      <!-- <form @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Login</label>
           <input
@@ -65,18 +60,7 @@ const handleResetDatabase = async () => {
       </form>
       <div class="mt-4 text-center text-sm text-gray-600">
         <p>Demo credentials: admin / admin123</p>
-      </div>
-
-      <!-- Reset db on deploy -->
-      <!-- <div class="mt-6">
-        <button
-          @click="handleResetDatabase"
-          :disabled="userStore.loading"
-          class="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition disabled:opacity-50"
-        >
-          {{ userStore.is_resetting ? 'Resetting...' : 'Reset Database' }}
-        </button>
-        -->
+      </div> -->
     </div>
   </div>
 </template>

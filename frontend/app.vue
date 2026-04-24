@@ -25,6 +25,17 @@ const userStore = useUserStore();
         </div>
       </div>
     </nav>
+
+    <!-- <header>
+      <Show when="signed-out">
+        <SignInButton />
+        <SignUpButton />
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </header> -->
+
     <main class="max-w-4xl mx-auto p-4">
       <NuxtPage />
     </main>

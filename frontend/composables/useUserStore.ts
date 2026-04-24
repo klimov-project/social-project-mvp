@@ -14,7 +14,7 @@ export const useUserStore = defineStore('user', {
     async signUp(
       login: string,
       password: string,
-      username: string,
+      username?: string,
       referralCode?: string,
     ) {
       this.loading = true;
@@ -22,7 +22,7 @@ export const useUserStore = defineStore('user', {
         const config = useRuntimeConfig();
         const data = await $fetch(`${config.public.apiBase}/auth/sign-up`, {
           method: 'POST',
-          body: { login, password, username, referralCode },
+          body: { login, password, referralCode },
         });
         this.error = null;
         return data;
@@ -33,6 +33,38 @@ export const useUserStore = defineStore('user', {
         this.loading = false;
       }
     },
+
+    // Регистрация через телефон
+    async registerByPhone(login, password, username?, phoneNumber) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const data = await $fetch(`${config.public.apiBase}/auth/sign-up`, {
+          method: 'POST',
+          body: { login, password },
+        });
+        console.log('phoneNumber registration flow. Data: ', data);
+
+        await this.fetchMe(); // для того что бы currentUser заполнился data
+        const payloadData = { contacts: { phone: phoneNumber } };
+        await this.updateCurrentAccount(payloadData);
+        return data;
+      } catch (err) {
+        // Если пользователь уже существует - это не ошибка
+        if (
+          err.statusCode === 400 &&
+          err.data?.message?.includes('already exists')
+        ) {
+          return { success: true, exists: true };
+        }
+        error.value = err.data?.message || 'Registration failed';
+        return { success: false, error: error.value };
+      } finally {
+        loading.value = false;
+      }
+    },
+
     async login(login: string, password: string) {
       this.loading = true;
       try {
@@ -86,7 +118,6 @@ export const useUserStore = defineStore('user', {
         throw err;
       }
     },
-    // User endpoints
     async fetchUsers(query = '') {
       this.loading = true;
       try {
@@ -102,7 +133,6 @@ export const useUserStore = defineStore('user', {
         this.loading = false;
       }
     },
-
     async fetchUserById(id: string | number) {
       try {
         const config = useRuntimeConfig();
@@ -115,7 +145,6 @@ export const useUserStore = defineStore('user', {
         throw err;
       }
     },
-
     async addUser(name: string, firstName: string, contacts?: any) {
       try {
         const config = useRuntimeConfig();
@@ -129,7 +158,6 @@ export const useUserStore = defineStore('user', {
       }
     },
     async mockVer(id: string) {
-      
       try {
         const config = useRuntimeConfig();
         const mockData = {
@@ -162,7 +190,7 @@ export const useUserStore = defineStore('user', {
             status: 'pending',
           },
         };
-        const id = this.currentUser.account.id; 
+        const id = this.currentUser.account.id;
         return await $fetch(`${config.public.apiBase}/users/${id}`, {
           method: 'POST',
           body: mockData,
@@ -192,7 +220,7 @@ export const useUserStore = defineStore('user', {
             passport: data.passport,
             contacts: data.contacts,
             verifiedAt: new Date().toISOString(),
-            status: 'pending', // или 'verified'
+            status: 'verified', // или 'pending'
           },
         };
 
@@ -205,6 +233,21 @@ export const useUserStore = defineStore('user', {
         throw err;
       }
     },
+    async activateAccount(id: string) {
+      try {
+        const config = useRuntimeConfig();
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
+        return await $fetch(`${config.public.apiBase}/auth/activate/${id}`, {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+      } catch (err) {
+        this.error = err.data?.message || err.message;
+        throw err;
+      }
+    },
+
     async resetDatabase() {
       this.is_resetting = true;
       try {

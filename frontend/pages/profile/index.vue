@@ -26,7 +26,9 @@ const fullName = computed(() => {
 
 const verificationStatus = computed(() => {
   const v = userStore.currentUser?.account?.verifications;
-  if (!v) return 'not_started';
+  if (!v || Object.keys(v).length === 0) {
+    return 'not_started';
+  }
   return v.status || (v.verifiedAt ? 'verified' : 'pending');
 });
 
@@ -334,12 +336,12 @@ const verifiedAt = computed(() => {
               : 'Start Verification'
           }}
         </button>
-        <button
+        <!-- <button
           @click="userStore.logout"
           class="px-6 py-3 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition"
         >
           Logout
-        </button>
+        </button> -->
       </div>
     </div>
   </div>

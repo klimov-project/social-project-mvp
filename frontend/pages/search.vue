@@ -13,13 +13,11 @@ const goToUser = (userId) => {
 };
 
 onMounted(async () => {
-  if (!userStore.currentUser) {
-    try {
-      await userStore.fetchMe();
-      await userStore.fetchUsers();
-    } catch (err) {
-      navigateTo('/');
-    }
+  try {
+    await userStore.fetchMe();
+    await userStore.fetchUsers();
+  } catch (err) {
+    navigateTo('/');
   }
 });
 </script>
